@@ -18,6 +18,10 @@ import { CreateNoteDto } from './dto/create-note.dto';
 import { UpdateNoteDto } from './dto/update-note.dto';
 // Import fungsi enkripsi dan dekripsi XOR
 import { xorEncrypt, xorDecrypt } from '../crypto/xor-stream';
+// Import pagination DTO
+import { PaginationDto } from '../common/dto/pagination.dto';
+// Import drizzle ORM functions
+import { count } from 'drizzle-orm';
 
 // Service untuk mengelola catatan
 @Injectable()
@@ -48,11 +52,84 @@ export class NotesService {
     return this.toResponse(inserted);
   }
 
-  // Mengambil semua catatan dari database
+  // Mengambil semua catatan dari database dengan pagination
   // Mengembalikan array catatan yang sudah didekripsi
-  async findAll() {
-    const rows = await this.db.select().from(notes);
-    return rows.map((row) => this.toResponse(row));
+  async findAll(pagination: PaginationDto, search?: string) {
+    const searchTerm = search?.trim();
+
+    if (searchTerm) {
+      const normalizedSearch = searchTerm.toLowerCase();
+      const allRows = await this.db
+        .select()
+        .from(notes)
+        .orderBy(notes.createdAt);
+
+      const filteredRows = allRows
+        .map((row) => {
+          const decryptedContent = xorDecrypt(row.contentEncrypted);
+          return {
+            row,
+            decryptedContent,
+          };
+        })
+        .filter(({ row, decryptedContent }) => {
+          const titleMatch = row.title.toLowerCase().includes(normalizedSearch);
+          const contentMatch = decryptedContent
+            .toLowerCase()
+            .includes(normalizedSearch);
+          return titleMatch || contentMatch;
+        });
+
+      const total = filteredRows.length;
+      const start = pagination.offset;
+      const end = start + pagination.limit;
+      const paginated = filteredRows.slice(start, end);
+
+      const data = paginated.map(({ row, decryptedContent }) =>
+        this.toResponse(row, decryptedContent),
+      );
+
+      const totalPages = total > 0 ? Math.ceil(total / pagination.limit) : 0;
+
+      return {
+        data,
+        meta: {
+          page: pagination.page,
+          limit: pagination.limit,
+          total,
+          totalPages,
+          hasNext: pagination.page < totalPages,
+          hasPrev: pagination.page > 1,
+        },
+      };
+    }
+
+    // Hitung total data
+    const [{ total }] = await this.db.select({ total: count() }).from(notes);
+
+    // Ambil data dengan pagination
+    const rows = await this.db
+      .select()
+      .from(notes)
+      .orderBy(notes.createdAt)
+      .limit(pagination.limit)
+      .offset(pagination.offset); // Urutkan berdasarkan createdAt terbaru
+
+    const data = rows.map((row) => this.toResponse(row));
+
+    // Return dengan format pagination
+    const totalPages = Math.ceil(total / pagination.limit);
+    return {
+      data,
+      meta: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages,
+        hasNext: pagination.page < totalPages,
+        hasPrev: pagination.page > 1,
+      },
+    };
   }
 
   // Mengambil satu catatan berdasarkan id
@@ -127,11 +204,14 @@ export class NotesService {
 
   // Mengubah data dari database menjadi response yang bisa dikirim ke client
   // Konten catatan akan didekripsi sebelum dikirim ke client
-  private toResponse(row: typeof notes.$inferSelect) {
+  private toResponse(
+    row: typeof notes.$inferSelect,
+    decryptedContent?: string,
+  ) {
     return {
       id: row.id,
       title: row.title,
-      content: xorDecrypt(row.contentEncrypted),
+      content: decryptedContent ?? xorDecrypt(row.contentEncrypted),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

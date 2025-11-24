@@ -8,6 +8,8 @@
 import { NestFactory } from '@nestjs/core';
 // Import module utama aplikasi
 import { AppModule } from './app.module';
+// Import response interceptor untuk format response standar
+import { ResponseInterceptor } from './common/decorators/api-response.decorator';
 
 // Fungsi utama untuk menjalankan aplikasi
 async function bootstrap() {
@@ -19,8 +21,10 @@ async function bootstrap() {
   app.enableCors({
     origin, // alamat frontend
   });
+  // Menggunakan global response interceptor untuk format response standar
+  app.useGlobalInterceptors(new ResponseInterceptor());
   // Menjalankan server pada port 3000
   await app.listen(3000);
 }
 // Menjalankan fungsi bootstrap
-bootstrap();
+void bootstrap();

@@ -4,13 +4,14 @@
  */
 
 // Mengimpor decorator validasi dari class-validator
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 // Kelas DTO untuk data pembuatan catatan baru
 export class CreateNoteDto {
   // Validasi agar title bertipe string dan tidak boleh kosong
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255, { message: 'Title maksimal 255 karakter' })
   title: string;
 
   // Validasi agar content bertipe string dan tidak boleh kosong
