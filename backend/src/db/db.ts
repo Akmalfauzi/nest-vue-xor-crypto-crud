@@ -12,14 +12,8 @@ import { drizzle } from 'drizzle-orm/mysql2';
 // Mengimpor skema database dari file schema.ts
 import * as schema from './schema';
 
-// Membuat pool koneksi ke database MySQL menggunakan konfigurasi dari environment
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASS,
-  database: process.env.DB_NAME,
-});
+// Membuat pool koneksi ke database MySQL hanya menggunakan DATABASE_URL dari environment
+const pool = mysql.createPool(process.env.DATABASE_URL!);
 
 // Mode konfigurasi untuk drizzle ORM
 const mode = 'default';
