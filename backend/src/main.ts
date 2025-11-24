@@ -21,6 +21,8 @@ async function bootstrap() {
   app.enableCors({
     origin, // alamat frontend
   });
+  // Gunakan prefix global /api untuk semua endpoint
+  app.setGlobalPrefix('api');
   // Menggunakan global response interceptor untuk format response standar
   app.useGlobalInterceptors(new ResponseInterceptor());
   // Menjalankan server pada port 3000
