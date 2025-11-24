@@ -1,0 +1,52 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Vite cache
+.vite/
+**/.vite/
+
+# TypeScript
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# NestJS
+backend/.cache
+backend/.nest-logs
+backend/dist/
+
+# Vue
+frontend/dist/
+frontend/.vite/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS Junk
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
