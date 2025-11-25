@@ -92,11 +92,18 @@ VITE_API_BASE=http://localhost:3000/api
 - Sesuaikan `VITE_API_BASE` dengan domain backend di masing-masing environment.
 - Simpan `XOR_KEY` secara aman dan gunakan nilai yang sama di semua deployment.
 
-### 5. Database Migration
+### 5. Database Migration (Opsional)
+Langkah ini menjalankan migrasi Drizzle untuk membuat/menyesuaikan struktur tabel secara otomatis. Jalankan jika Anda ingin Drizzle mengatur schema atau setelah melakukan perubahan pada schema.
+
 ```bash
 cd backend
 npm run drizzle:migrate
 ```
+
+**Kapan perlu dijalankan?**
+- ✅ Saat pertama kali setup jika Anda tidak membuat tabel secara manual.
+- ✅ Setelah melakukan perubahan schema (menambah kolom, tabel, dsb.) via Drizzle.
+- ❌ Bisa dilewati jika database sudah dibuat secara manual persis seperti schema yang dibutuhkan dan tidak ada perubahan baru.
 
 ### 6. Menjalankan Aplikasi
 ```bash
